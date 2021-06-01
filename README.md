@@ -3,12 +3,12 @@ By Qing-Long Zhang and Yu-Bin Yang
 
 [State Key Laboratory for Novel Software Technology at Nanjing University]
 
-This repo is the official implementation of ["ResT: An Efficient Transformer for Visual Recognition"](https://arxiv.org/pdf/2105.13677v1.pdf). It currently includes code and models for the following tasks:
+This repo is the official implementation of ["ResT: An Efficient Transformer for Visual Recognition"](https://arxiv.org/pdf/2105.13677v2.pdf). It currently includes code and models for the following tasks:
 > **Image Classification**: Included in this repo. See [get_started.md](get_started.md) for a quick start.
 
 > **Object Detection and Instance Segmentation**: Based on [detectron2](https://github.com/facebookresearch/detectron2), coming soon.
 
-**ResT** is initially described in [arxiv](https://arxiv.org/pdf/2105.13677v1.pdf), which capably serves as a
+**ResT** is initially described in [arxiv](https://arxiv.org/pdf/2105.13677v2.pdf), which capably serves as a
 general-purpose backbone for computer vision. It can tackle input images with arbitrary size. Besides, 
 ResT compressed the memory of standard MSA and model the interaction between multi-heads while keeping 
 the diversity ability. 
@@ -34,7 +34,7 @@ Note: access code for `baidu` is `rest`.
 @article{zhql2021ResT,
   title={ResT: An Efficient Transformer for Visual Recognition},
   author={Zhang, Qinglong and Yang, Yubin},
-  journal={arXiv preprint arXiv:2105.13677},
+  journal={arXiv preprint arXiv:2105.13677v2},
   year={2021}
 }
 ```
