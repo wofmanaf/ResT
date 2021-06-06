@@ -1,0 +1,15 @@
+_BASE_: "../Base-RetinaNet.yaml"
+MODEL:
+  WEIGHTS: ""
+  BACKBONE:
+    NAME: "build_retinanet_rest_fpn_backbone"
+  REST:
+    NAME : "rest_small"
+    OUT_FEATURES: ["stage2", "stage3", "stage4"]
+  FPN:
+    IN_FEATURES: ["stage2", "stage3", "stage4"]
+SOLVER:
+  OPTIMIZER: "AdamW"
+  BASE_LR: 0.0001
+  WEIGHT_DECAY: 0.05
+OUTPUT_DIR: "output/retinanet/rest_small_ms_1x"
