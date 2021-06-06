@@ -31,6 +31,8 @@ Note: access code for `baidu` is `rest`.
 
 **COCO Object Detection (2017 val)**
 
+Attention: The results of downstream tasks are very sensitive to the training settings, a fluctuation of 1.0 is OK!
+
 | Backbone | Method | pretrain | Lr Schd | box mAP | mask mAP | #params | model |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | ResT-Small | RetinaNet | ImageNet-1K | 1x | 40.3 | - | 23.4M | [baidu](https://pan.baidu.com/s/1Yi1pBN953YWSyzLmYssEWQ) |
@@ -41,7 +43,6 @@ Note: access code for `baidu` is `rest`.
 Note: This is the results with LN (Comparison is shown in the Appendix part). 
 For training with rest backbones, you need to convert the original pre-trained weights to d2 format by [convert_to_d2.py](d2/convert_to_d2.py). Access code for `baidu` is `rest`.
 
-Attention: The results of downstream tasks are very sensitive to the training settings, a fluctuation of 1.0 is OK!
 ## Citing ResT
 
 ```
