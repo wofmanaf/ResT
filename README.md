@@ -25,7 +25,7 @@ the diversity ability.
 | ResT-Base  | 224x224 | 81.6 | 95.7 | 30.3M | 4.3G | 673  | [baidu](https://pan.baidu.com/s/1sSi7r83ujb146WhU8F-wGw)
 | ResT-Large | 224x224 | 83.6 | 96.3 | 51.6M | 7.9G | 429 | [baidu](https://pan.baidu.com/s/1lVStrppan4nbAqCEuNvRDg)
 
-Note: access code for `baidu` is `rest`.
+Note: access code for `baidu` is `rest`. pretrained models for [google drive](https://drive.google.com/drive/folders/1H6QUZsKYbU6LECtxzGHKqEeGbx1E8uQ9).
 
 ## Main Results on Downstream Tasks
 

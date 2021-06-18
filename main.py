@@ -182,7 +182,6 @@ def main(args):
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
     np.random.seed(seed)
-    # random.seed(seed)
 
     cudnn.benchmark = True
 
@@ -247,6 +246,7 @@ def main(args):
         drop_block_rate=None,
     )
 
+    model_without_ddp = model
     if args.finetune:
         if args.finetune.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
@@ -259,10 +259,10 @@ def main(args):
         else:
             model_without_ddp.load_state_dict(checkpoint)
         state_dict = model.state_dict()
-        for k in ['head.weight', 'head.bias', 'head_dist.weight', 'head_dist.bias']:
-            if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-                print(f"Removing key {k} from pretrained checkpoint")
-                del checkpoint_model[k]
+        # for k in ['head.weight', 'head.bias', 'head_dist.weight', 'head_dist.bias']:
+        #     if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
+        #         print(f"Removing key {k} from pretrained checkpoint")
+        #         del checkpoint_model[k]
 
         # # interpolate position embedding
         # pos_embed_checkpoint = checkpoint_model['pos_embed']
@@ -284,7 +284,7 @@ def main(args):
         # new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
         # checkpoint_model['pos_embed'] = new_pos_embed
 
-        model.load_state_dict(checkpoint_model, strict=False)
+        model.load_state_dict(state_dict, strict=False)
 
     model.to(device)
 
@@ -297,7 +297,6 @@ def main(args):
     #         device='cpu' if args.model_ema_force_cpu else '',
     #         resume='')
 
-    model_without_ddp = model
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
@@ -414,7 +413,7 @@ def main(args):
                     'optimizer': optimizer.state_dict(),
                     'lr_scheduler': lr_scheduler.state_dict(),
                 }, checkpoint_path)
-        if is_best:
+        if is_best and epoch > args.start_epoch:
             shutil.copyfile(os.path.join(output_dir, 'checkpoint.pth.tar'),
                             os.path.join(output_dir, 'model_best.pth.tar'))
 
@@ -423,8 +422,7 @@ def main(args):
 
         log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                      **{f'test_{k}': v for k, v in test_stats.items()},
-                     'epoch': epoch,
-                     'n_parameters': n_parameters}
+                     'epoch': epoch}
 
         if args.output_dir and utils.is_main_process():
             with (output_dir / "log.txt").open("a") as f:

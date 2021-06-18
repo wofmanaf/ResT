@@ -132,3 +132,12 @@ python -m torch.distributed.launch --nproc_per_node 8 --use_env main.py --model 
 python -m torch.distributed.launch --nproc_per_node 8 --use_env main.py --model rest_large \
 --drop-path 0.3 --data-path <imagenet-path> --batch-size 240 --output_dir --output_dir <output-directory>
 ```
+
+For fine-tuning a `ResT` on ImageNet, run:
+
+```bash
+python -m torch.distributed.launch --nproc_per_node <num-of-gpus-to-use> --use_env main.py --model <rest-model>  \
+--finetune <rest-model.pth> --lr 5e-6 --weight-decay 1e-8 --epochs 30 --warmup-epochs 0 --sched step --input-size 384 \
+--data-path <imagenet-path> --batch-size 128 --output_dir --output_dir <output-directory>
+```
+
