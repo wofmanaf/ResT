@@ -346,4 +346,3 @@ def rest_large(pretrained=False, **kwargs):
                  depths=[2, 2, 18, 2], sr_ratios=[8, 4, 2, 1], apply_transform=True, **kwargs)
     model.default_cfg = _cfg()
     return model
-

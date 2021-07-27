@@ -247,11 +247,12 @@ class ResT(Backbone):
         if freeze_at < 0:
             return
         for stage_index in range(freeze_at):
-            if stage_index == 0:
+            if stage_index >= 0:
                 # stage 0 is the stem
+                self.stem.eval()
                 for p in self.stem.parameters():
                     p.requires_grad = False
-            elif stage_index == 1:
+            if stage_index == 1:
                 for p in self.stage1.parameters():
                     p.requires_grad = False
             else:

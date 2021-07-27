@@ -2,25 +2,21 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 """
 Detection Training Script.
-
 This scripts reads a given config file and runs the training or evaluation.
 It is an entry point that is made to train standard models in detectron2.
-
 In order to let one script support training of many models,
 this script contains logic that are specific to these built-in models and therefore
 may not be suitable for your own project.
 For example, your research project perhaps only needs a single "evaluator".
-
 Therefore, we recommend you to use detectron2 as an library and take
 this file as an example of how to use the library.
 You may want to write your own script with your datasets and other customizations.
 """
-
+import itertools
 import logging
 import os
 from collections import OrderedDict
 import torch
-from detectron2.config import CfgNode
 
 import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
@@ -67,27 +63,29 @@ class Trainer(DefaultTrainer):
                 SemSegEvaluator(
                     dataset_name,
                     distributed=True,
+                    num_classes=cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES,
+                    ignore_label=cfg.MODEL.SEM_SEG_HEAD.IGNORE_VALUE,
                     output_dir=output_folder,
                 )
             )
         if evaluator_type in ["coco", "coco_panoptic_seg"]:
-            evaluator_list.append(COCOEvaluator(dataset_name, output_dir=output_folder))
+            evaluator_list.append(COCOEvaluator(dataset_name, cfg, True, output_folder))
         if evaluator_type == "coco_panoptic_seg":
             evaluator_list.append(COCOPanopticEvaluator(dataset_name, output_folder))
         if evaluator_type == "cityscapes_instance":
             assert (
-                torch.cuda.device_count() >= comm.get_rank()
+                    torch.cuda.device_count() >= comm.get_rank()
             ), "CityscapesEvaluator currently do not work with multiple machines."
             return CityscapesInstanceEvaluator(dataset_name)
         if evaluator_type == "cityscapes_sem_seg":
             assert (
-                torch.cuda.device_count() >= comm.get_rank()
+                    torch.cuda.device_count() >= comm.get_rank()
             ), "CityscapesEvaluator currently do not work with multiple machines."
             return CityscapesSemSegEvaluator(dataset_name)
         elif evaluator_type == "pascal_voc":
             return PascalVOCDetectionEvaluator(dataset_name)
         elif evaluator_type == "lvis":
-            return LVISEvaluator(dataset_name, output_dir=output_folder)
+            return LVISEvaluator(dataset_name, cfg, True, output_folder)
         if len(evaluator_list) == 0:
             raise NotImplementedError(
                 "no Evaluator for the dataset {} with the type {}".format(
@@ -116,33 +114,48 @@ class Trainer(DefaultTrainer):
         return res
 
     @classmethod
-    def build_optimizer(cfg: CfgNode, model: torch.nn.Module) -> torch.optim.Optimizer:
-        """
-        Build an optimizer from config.
-        """
+    def build_optimizer(cls, cfg, model):
         params = get_default_optimizer_params(
             model,
             base_lr=cfg.SOLVER.BASE_LR,
+            weight_decay=cfg.SOLVER.WEIGHT_DECAY,
             weight_decay_norm=cfg.SOLVER.WEIGHT_DECAY_NORM,
             bias_lr_factor=cfg.SOLVER.BIAS_LR_FACTOR,
             weight_decay_bias=cfg.SOLVER.WEIGHT_DECAY_BIAS,
         )
-        optimizer_type = cfg.SOLVER.OPTIMIZER
-        if optimizer_type == "AdamW":
-            return maybe_add_gradient_clipping(cfg, torch.optim.AdamW)(
-                params,
-                lr=cfg.SOLVER.BASE_LR,
-                weight_decay=cfg.SOLVER.WEIGHT_DECAY,
+
+        def maybe_add_full_model_gradient_clipping(optim):  # optim: the optimizer class
+            # detectron2 doesn't have full model gradient clipping now
+            clip_norm_val = cfg.SOLVER.CLIP_GRADIENTS.CLIP_VALUE
+            enable = (
+                    cfg.SOLVER.CLIP_GRADIENTS.ENABLED
+                    and cfg.SOLVER.CLIP_GRADIENTS.CLIP_TYPE == "full_model"
+                    and clip_norm_val > 0.0
             )
 
-        else:
-            return maybe_add_gradient_clipping(cfg, torch.optim.SGD)(
-                params,
-                lr=cfg.SOLVER.BASE_LR,
-                momentum=cfg.SOLVER.MOMENTUM,
+            class FullModelGradientClippingOptimizer(optim):
+                def step(self, closure=None):
+                    all_params = itertools.chain(*[x["params"] for x in self.param_groups])
+                    torch.nn.utils.clip_grad_norm_(all_params, clip_norm_val)
+                    super().step(closure=closure)
+
+            return FullModelGradientClippingOptimizer if enable else optim
+
+        optimizer_type = cfg.SOLVER.OPTIMIZER
+        if optimizer_type == "SGD":
+            optimizer = maybe_add_gradient_clipping(torch.optim.SGD)(
+                params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM,
                 nesterov=cfg.SOLVER.NESTEROV,
                 weight_decay=cfg.SOLVER.WEIGHT_DECAY,
             )
+        elif optimizer_type == "AdamW":
+            optimizer = maybe_add_full_model_gradient_clipping(torch.optim.AdamW)(
+                params, cfg.SOLVER.BASE_LR, betas=(0.9, 0.999),
+                weight_decay=cfg.SOLVER.WEIGHT_DECAY,
+            )
+        else:
+            raise NotImplementedError(f"no optimizer type {optimizer_type}")
+        return optimizer
 
 
 def setup(args):
