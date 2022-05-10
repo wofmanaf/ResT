@@ -1,8 +1,9 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
-"""
-A script to run multinode training with submitit.
-"""
+# ------------------------------------------------------------
+# Copyright (c) VCU, Nanjing University.
+# Licensed under the Apache License 2.0 [see LICENSE for details]
+# Written by Qing-Long Zhang
+# ------------------------------------------------------------
+
 import argparse
 import os
 import uuid
@@ -14,14 +15,14 @@ import submitit
 
 def parse_args():
     classification_parser = classification.get_args_parser()
-    parser = argparse.ArgumentParser("Submitit for DeiT", parents=[classification_parser])
+    parser = argparse.ArgumentParser("Submitit for ResTv2", parents=[classification_parser])
     parser.add_argument("--ngpus", default=8, type=int, help="Number of gpus to request on each node")
     parser.add_argument("--nodes", default=2, type=int, help="Number of nodes to request")
-    parser.add_argument("--timeout", default=2800, type=int, help="Duration of the job")
-    parser.add_argument("--job_dir", default="", type=str, help="Job dir. Leave empty for automatic.")
-
-    parser.add_argument("--partition", default="learnfair", type=str, help="Partition where to submit")
-    parser.add_argument("--use_volta32", action='store_true', help="Big models? Use this")
+    parser.add_argument("--timeout", default=72, type=int, help="Duration of the job, in hours")
+    parser.add_argument("--job_name", default="restv2", type=str, help="Job name")
+    parser.add_argument("--job_dir", default="", type=str, help="Job directory; leave empty for default")
+    parser.add_argument("--partition", default="learnlab", type=str, help="Partition where to submit")
+    parser.add_argument("--use_volta32", action='store_true', default=True, help="Big models? Use this")
     parser.add_argument('--comment', default="", type=str,
                         help='Comment to pass to scheduler, e.g. priority message')
     return parser.parse_args()
@@ -30,7 +31,7 @@ def parse_args():
 def get_shared_folder() -> Path:
     user = os.getenv("USER")
     if Path("/checkpoint/").is_dir():
-        p = Path(f"/checkpoint/{user}/experiments")
+        p = Path(f"/checkpoint/{user}/restv2")
         p.mkdir(exist_ok=True)
         return p
     raise RuntimeError("No shared folder available")
@@ -60,9 +61,7 @@ class Trainer(object):
         import submitit
 
         self.args.dist_url = get_init_file().as_uri()
-        checkpoint_file = os.path.join(self.args.output_dir, "checkpoint.pth")
-        if os.path.exists(checkpoint_file):
-            self.args.resume = checkpoint_file
+        self.args.auto_resume = True
         print("Requeuing ", self.args)
         empty_trainer = type(self)(self.args)
         return submitit.helpers.DelayedSubmission(empty_trainer)
@@ -72,7 +71,7 @@ class Trainer(object):
         from pathlib import Path
 
         job_env = submitit.JobEnvironment()
-        self.args.output_dir = Path(str(self.args.output_dir).replace("%j", str(job_env.job_id)))
+        self.args.output_dir = Path(self.args.job_dir)
         self.args.gpu = job_env.local_rank
         self.args.rank = job_env.global_rank
         self.args.world_size = job_env.num_tasks
@@ -81,15 +80,15 @@ class Trainer(object):
 
 def main():
     args = parse_args()
+
     if args.job_dir == "":
         args.job_dir = get_shared_folder() / "%j"
 
-    # Note that the folder will depend on the job_id, to easily track experiments
     executor = submitit.AutoExecutor(folder=args.job_dir, slurm_max_num_timeout=30)
 
     num_gpus_per_node = args.ngpus
     nodes = args.nodes
-    timeout_min = args.timeout
+    timeout_min = args.timeout * 60
 
     partition = args.partition
     kwargs = {}
@@ -111,7 +110,7 @@ def main():
         **kwargs
     )
 
-    executor.update_parameters(name="deit")
+    executor.update_parameters(name=args.job_name)
 
     args.dist_url = get_init_file().as_uri()
     args.output_dir = args.job_dir

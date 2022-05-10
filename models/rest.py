@@ -1,3 +1,9 @@
+# ------------------------------------------------------------
+# Copyright (c) VCU, Nanjing University.
+# Licensed under the Apache License 2.0 [see LICENSE for details]
+# Written by Qing-Long Zhang
+# ------------------------------------------------------------
+
 import torch
 import torch.nn as nn
 
@@ -68,7 +74,7 @@ class Attention(nn.Module):
 
         self.sr_ratio = sr_ratio
         if sr_ratio > 1:
-            self.sr = nn.Conv2d(dim, dim, kernel_size=sr_ratio+1, stride=sr_ratio, padding=sr_ratio // 2, groups=dim)
+            self.sr = nn.Conv2d(dim, dim, kernel_size=sr_ratio + 1, stride=sr_ratio, padding=sr_ratio // 2, groups=dim)
             self.sr_norm = nn.LayerNorm(dim)
 
         self.apply_transform = apply_transform and num_heads > 1
@@ -144,10 +150,11 @@ class GL(nn.Module):
 
 class PatchEmbed(nn.Module):
     """ Image to Patch Embedding"""
+
     def __init__(self, patch_size=16, in_ch=3, out_ch=768, with_pos=False):
         super().__init__()
         self.patch_size = to_2tuple(patch_size)
-        self.conv = nn.Conv2d(in_ch, out_ch, kernel_size=patch_size+1, stride=patch_size, padding=patch_size // 2)
+        self.conv = nn.Conv2d(in_ch, out_ch, kernel_size=patch_size + 1, stride=patch_size, padding=patch_size // 2)
         self.norm = nn.BatchNorm2d(out_ch)
 
         self.with_pos = with_pos
@@ -241,25 +248,25 @@ class ResT(nn.Module):
 
         self.stage1 = nn.ModuleList([
             Block(embed_dims[0], num_heads[0], mlp_ratios[0], qkv_bias, qk_scale, drop_rate, attn_drop_rate,
-                  drop_path=dpr[cur+i], norm_layer=norm_layer, sr_ratio=sr_ratios[0], apply_transform=apply_transform)
+                  drop_path=dpr[cur + i], norm_layer=norm_layer, sr_ratio=sr_ratios[0], apply_transform=apply_transform)
             for i in range(self.depths[0])])
 
         cur += depths[0]
         self.stage2 = nn.ModuleList([
             Block(embed_dims[1], num_heads[1], mlp_ratios[1], qkv_bias, qk_scale, drop_rate, attn_drop_rate,
-                  drop_path=dpr[cur+i], norm_layer=norm_layer, sr_ratio=sr_ratios[1], apply_transform=apply_transform)
+                  drop_path=dpr[cur + i], norm_layer=norm_layer, sr_ratio=sr_ratios[1], apply_transform=apply_transform)
             for i in range(self.depths[1])])
 
         cur += depths[1]
         self.stage3 = nn.ModuleList([
             Block(embed_dims[2], num_heads[2], mlp_ratios[2], qkv_bias, qk_scale, drop_rate, attn_drop_rate,
-                  drop_path=dpr[cur+i], norm_layer=norm_layer, sr_ratio=sr_ratios[2], apply_transform=apply_transform)
+                  drop_path=dpr[cur + i], norm_layer=norm_layer, sr_ratio=sr_ratios[2], apply_transform=apply_transform)
             for i in range(self.depths[2])])
 
         cur += depths[2]
         self.stage4 = nn.ModuleList([
             Block(embed_dims[3], num_heads[3], mlp_ratios[3], qkv_bias, qk_scale, drop_rate, attn_drop_rate,
-                  drop_path=dpr[cur+i], norm_layer=norm_layer, sr_ratio=sr_ratios[3], apply_transform=apply_transform)
+                  drop_path=dpr[cur + i], norm_layer=norm_layer, sr_ratio=sr_ratios[3], apply_transform=apply_transform)
             for i in range(self.depths[3])])
 
         self.norm = norm_layer(embed_dims[3])

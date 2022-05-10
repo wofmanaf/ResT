@@ -1,0 +1,29 @@
+_BASE_: "../Base-RetinaNet.yaml"
+MODEL:
+  WEIGHTS: "restv2_tiny.pth"
+  PIXEL_MEAN: [123.675, 116.28, 103.53] # use RGB [103.530, 116.280, 123.675]
+  PIXEL_STD: [58.395, 57.12, 57.375] #[57.375, 57.120, 58.395]  # I use the dafault config [1.0, 1.0, 1.0] and BGR format, that is a mistake 
+  RESNETS:
+    DEPTH: 50
+  BACKBONE:
+    NAME: "build_retinanet_swint_fpn_backbone"
+  SWINT:
+    OUT_FEATURES: ["stage3", "stage4", "stage5"]
+  FPN:
+    IN_FEATURES: ["stage3", "stage4", "stage5"]
+INPUT:
+  FORMAT: "RGB"
+  MIN_SIZE_TRAIN: (384, 512, 640, 768, 896, 1024)
+SOLVER:
+  STEPS: (210000, 250000)
+  MAX_ITER: 270000
+  WEIGHT_DECAY: 0.05
+  BASE_LR: 0.0001
+  AMP:
+    ENABLED: True
+TEST:
+  EVAL_PERIOD: 30000 
+
+DATASETS:
+  TRAIN: ("coco_2017_train",)
+  TEST: ("coco_2017_val",)

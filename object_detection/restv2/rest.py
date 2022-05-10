@@ -1,3 +1,10 @@
+# --------------------------------------------------------
+# ResT V1
+# Copyright (c) VCU, Nanjing University
+# Licensed under The MIT License [see LICENSE for details]
+# Written by Qing-Long Zhang
+# --------------------------------------------------------
+
 import torch
 import torch.nn as nn
 
