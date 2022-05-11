@@ -1,9 +1,8 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-
-# All rights reserved.
-
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
+# ------------------------------------------------------------
+# Copyright (c) VCU, Nanjing University.
+# Licensed under the Apache License 2.0 [see LICENSE for details]
+# Written by Qing-Long Zhang
+# ------------------------------------------------------------
 
 
 _base_ = [
@@ -30,10 +29,10 @@ model = dict(
     auxiliary_head=dict(
         in_channels=384,
         num_classes=150
-    ), 
+    ),
 )
 
-optimizer = dict(constructor='LearningRateDecayOptimizerConstructor', _delete_=True, type='AdamW', 
+optimizer = dict(constructor='LearningRateDecayOptimizerConstructor', _delete_=True, type='AdamW',
                  lr=0.00015, betas=(0.9, 0.999), weight_decay=0.05,
                  paramwise_cfg={'decay_rate': 0.9,
                                 'decay_type': 'stage_wise',

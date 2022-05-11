@@ -1,9 +1,8 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-
-# All rights reserved.
-
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
+# ------------------------------------------------------------
+# Copyright (c) VCU, Nanjing University.
+# Licensed under the Apache License 2.0 [see LICENSE for details]
+# Written by Qing-Long Zhang
+# ------------------------------------------------------------
 
 
 _base_ = [
