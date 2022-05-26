@@ -105,3 +105,6 @@ If you find this repository helpful, please consider citing:
   journal={arXiv preprint arXiv:2204.07366},
   year={2022}
 ```
+
+## Third-party Implementation
+[2022/05/26] ResTv1 and ResTv2 in [PaddleViT](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ResT)
