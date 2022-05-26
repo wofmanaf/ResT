@@ -107,4 +107,4 @@ If you find this repository helpful, please consider citing:
 ```
 
 ## Third-party Implementation
-[2022/05/26] ResTv1 and ResTv2 in [PaddleViT](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ResT)
+[2022/05/26] ResT and ResT v2 have been integrated into [PaddleViT](https://github.com/BR-IDL/PaddleViT), checkout [here](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ResT) for the 3rd party implementation on Paddle framework!
