@@ -8,7 +8,7 @@ operation to reconstruct the lost medium- and high-frequency information caused 
 Official PyTorch implementation of **ResTv1** and **ResTv2**, from the following paper:
 
 [ResT: An Efficient Transformer for Visual Recognition](https://arxiv.org/abs/2105.13677). NeurIPS 2021.\
-[ResT V2: Simpler, Faster and Stronger](https://arxiv.org/abs/2204.07366). arXiv 2022.\
+[ResT V2: Simpler, Faster and Stronger](https://arxiv.org/abs/2204.07366). NeurIPS 2022.\
 By Qing-Long Zhang and Yu-Bin Yang \
 State Key Laboratory for Novel Software Technology at Nanjing University
 
